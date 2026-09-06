@@ -1,3 +1,70 @@
-# compiler
+# Fluorite Compiler
 
-A Node CLI to compile multiple JavaScript files into a TurboWarp extension.
+Compile multiple JavaScript modules into a single [TurboWarp](https://turbowarp.org/) extension file.
+
+## Install
+
+```bash
+npm install fluorite-compiler
+# or, globally:
+npm install -g fluorite-compiler
+```
+
+## Quick start
+
+```bash
+# scaffold a new extension project
+fluorite-compiler init my-extension
+
+# compile it
+fluorite-compiler build my-extension
+```
+
+The compiled file is written to `dist/<id>@<version>.js`.
+
+## Project layout
+
+```
+my-extension/
+├── .product.json          # (compiler repo only)
+├── src/
+│   ├── 00-index.js        # entry point — exports getInfo() + block handlers
+│   ├── 01-hello-world.js  # your modules, imported by 00-index.js
+│   └── 99-manifest.json   # extension metadata (class, id, version, …)
+└── assets/
+    └── hello-icon.svg     # any referenced files, embedded as base64
+```
+
+## CLI
+
+```
+fluorite-compiler <command> [project-dir]
+```
+
+| Command | Description |
+|---------|-------------|
+| `init`  | Scaffold `src/`, `assets/`, and starter files in `[project-dir]` (defaults to cwd). |
+| `build` | Bundle, tree-shake, embed assets, and write `dist/<id>@<version>.js`. |
+
+| Flag | Description |
+|------|-------------|
+| `-h`, `--help` | Show usage information. |
+| `-V`, `--version` | Print the compiler version. |
+
+## Programmatic API
+
+```js
+import { init, build, loadProduct } from "fluorite-compiler";
+```
+
+| Function | Signature | Returns |
+|----------|-----------|---------|
+| [`init(dir?, opts?)`](#initdir-opts) | `init(targetDir?, { logger?, product? })` | `{ created: string[], skipped: string[] }` |
+| [`build(dir?, opts?)`](#builddir-opts) | `build(targetDir?, { logger?, product? })` | `{ file: string, output: string, warnings: string[] }` |
+| [`loadProduct()`](#loadproduct) | `loadProduct()` | `Promise<ProductConfig>` |
+
+For full details see [API docs](docs/api.md).
+
+## License
+
+Apache-2.0
