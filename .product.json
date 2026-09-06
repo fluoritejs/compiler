@@ -1,0 +1,6 @@
+{
+  "name": "Fluorite Compiler",
+  "bin": "fluorite-compiler",
+  "runtimeGlobal": "Fluorite",
+  "description": "Compile multiple JavaScript modules into a single TurboWarp extension."
+}
