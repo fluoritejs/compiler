@@ -51,20 +51,6 @@ fluorite-compiler <command> [project-dir]
 | `-h`, `--help` | Show usage information. |
 | `-V`, `--version` | Print the compiler version. |
 
-## Programmatic API
-
-```js
-import { init, build, loadProduct } from "fluorite-compiler";
-```
-
-| Function | Signature | Returns |
-|----------|-----------|---------|
-| [`init(dir?, opts?)`](#initdir-opts) | `init(targetDir?, { logger?, product? })` | `{ created: string[], skipped: string[] }` |
-| [`build(dir?, opts?)`](#builddir-opts) | `build(targetDir?, { logger?, product? })` | `{ file: string, output: string, warnings: string[] }` |
-| [`loadProduct()`](#loadproduct) | `loadProduct()` | `Promise<ProductConfig>` |
-
-For full details see [API docs](docs/api.md).
-
 ## License
 
-Apache-2.0
+Fluorite Compiler is proud to be Free Software. It is under the [Apache 2.0](LICENSE) license.
