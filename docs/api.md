@@ -80,6 +80,7 @@ const { file, output, warnings } = await build("/path/to/project");
 | Unsupported import | `Unsupported import "…" in …` |
 | Circular import | `Circular import detected involving …` |
 | Dynamic asset key | `Asset keys must be static string literals …` |
+| Referenced asset missing | `Referenced asset "…" does not exist in the assets/ directory. …` |
 
 ---
 
@@ -130,4 +131,3 @@ Build warnings are reported via `logger.warn()` and collected in the `warnings` 
 | `package.json` `license` differs from manifest | `package.json license ("…") differs from the manifest's license ("…").` |
 | `package.json` `description` differs from manifest | `package.json description ("…") differs from the manifest's description ("…").` |
 | `package.json` `name` | **Never warned** — exempt from the consistency check. |
-| Referenced asset missing from `assets/` | `Referenced asset "…" does not exist in the assets/ directory.` |
