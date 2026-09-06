@@ -16,10 +16,15 @@
   "main": "src/index.js",
   "bin": "src/cli.js",
   "scripts": {
-    "test": "node --test \"test/*.test.js\""
+    "test": "node --test \"test/*.test.js\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "eslint": "^10.10.0",
+    "globals": "^17.12.0",
     "skills": "^1.5.23"
   },
   "dependencies": {
