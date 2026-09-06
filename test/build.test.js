@@ -128,6 +128,28 @@ describe("build", () => {
     );
   });
 
+  it("fails with a clear error when a referenced asset is missing", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `export function getInfo() {
+  return {
+    blockIconURI: Fluorite.assets["missing-icon.png"],
+    blocks: [],
+  };
+}
+`;
+    await writeProject(dir, { entry });
+
+    const { logger } = silentLogger();
+    await assert.rejects(
+      () => build(dir, { logger }),
+      (error) => {
+        assert.match(error.message, /missing-icon\.png/);
+        assert.match(error.message, /does not exist in the assets\/ directory/);
+        return true;
+      }
+    );
+  });
+
   it("warns when hardcoded id/name literals differ from the manifest", async (t) => {
     const dir = await makeTempProject(t);
     const entry = `import { hello } from "./01-hello-world.js";

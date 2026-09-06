@@ -27,13 +27,20 @@ function toPosix(path) {
 describe("init", () => {
   it("scaffolds exactly the expected files", async (t) => {
     const dir = await makeTempProject(t);
-    const { logger, errors } = silentLogger();
+    const { logger, errors, messages } = silentLogger();
 
     const result = await init(dir, { logger });
 
     const created = result.created.map((file) => toPosix(relative(dir, file))).sort();
     assert.deepEqual(created, EXPECTED_FILES.map(toPosix).sort());
     assert.equal(errors.length, 0);
+
+    for (const file of result.created) {
+      assert.ok(
+        messages.some((message) => message.includes(`Created ${toPosix(file)}`)),
+        `expected a Created message for ${file}`
+      );
+    }
 
     assert.equal(await readFile(join(dir, "src/99-manifest.json"), "utf8"), MANIFEST_TEMPLATE);
     assert.equal(await readFile(join(dir, "src/00-index.js"), "utf8"), entryTemplate("Fluorite"));
