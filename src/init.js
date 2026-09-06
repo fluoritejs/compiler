@@ -89,7 +89,7 @@ export async function scaffoldFiles(targetDir, { product, logger }) {
       await mkdir(dirname(file), { recursive: true });
       await writeFile(file, content, "utf8");
       created.push(file);
-      logger.success(file);
+      logger.success(`Created ${file}`);
     }
   }
 

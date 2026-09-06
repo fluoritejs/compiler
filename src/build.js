@@ -498,14 +498,15 @@ async function checkPackageJson(projectDir, manifest, warnings) {
   }
 }
 
-function buildAssetsObject(references, candidates, warnings) {
+function buildAssetsObject(references, candidates, runtimeGlobal) {
   const assets = {};
   for (const key of references) {
-    if (candidates.has(key)) {
-      assets[key] = candidates.get(key);
-    } else {
-      warnings.push(`Referenced asset ${JSON.stringify(key)} does not exist in the ${ASSETS_DIR}/ directory. ${key} will be missing from the compiled output.`);
+    if (!candidates.has(key)) {
+      throw new Error(
+        `Referenced asset ${JSON.stringify(key)} does not exist in the ${ASSETS_DIR}/ directory. Every ${runtimeGlobal}.assets["..."] reference must resolve to a real file.`
+      );
     }
+    assets[key] = candidates.get(key);
   }
   return assets;
 }
@@ -626,7 +627,7 @@ export async function build(projectDir = process.cwd(), options = {}) {
   }
 
   const candidates = await loadAssetCandidates(projectDir);
-  const assets = buildAssetsObject(references, candidates, warnings);
+  const assets = buildAssetsObject(references, candidates, runtimeGlobal);
 
   for (const warning of warnings) {
     logger.warn(warning);
