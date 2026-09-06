@@ -14,14 +14,16 @@
   "author": "Fluorite",
   "type": "module",
   "main": "src/index.js",
+  "bin": "src/cli.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test \"test/*.test.js\""
   },
   "devDependencies": {
     "eslint": "^10.10.0",
     "skills": "^1.5.23"
   },
   "dependencies": {
+    "acorn": "^8.15.0",
     "prettier": "^3.9.6"
   }
 }
