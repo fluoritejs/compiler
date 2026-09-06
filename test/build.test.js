@@ -52,15 +52,32 @@ const DEFAULT_ASSETS = {
 `,
 };
 
-async function writeProject(dir, { entry = DEFAULT_ENTRY, module = DEFAULT_MODULE, manifest = DEFAULT_MANIFEST, assets = DEFAULT_ASSETS, packageJson } = {}) {
+async function writeProject(
+  dir,
+  {
+    entry = DEFAULT_ENTRY,
+    module = DEFAULT_MODULE,
+    manifest = DEFAULT_MANIFEST,
+    assets = DEFAULT_ASSETS,
+    packageJson,
+  } = {},
+) {
   await writeFile(join(dir, "src", "00-index.js"), entry, "utf8");
   await writeFile(join(dir, "src", "01-hello-world.js"), module, "utf8");
-  await writeFile(join(dir, "src", "99-manifest.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
+  await writeFile(
+    join(dir, "src", "99-manifest.json"),
+    JSON.stringify(manifest, null, 2) + "\n",
+    "utf8",
+  );
   for (const [name, content] of Object.entries(assets)) {
     await writeFile(join(dir, "assets", name), content, "utf8");
   }
   if (packageJson) {
-    await writeFile(join(dir, "package.json"), JSON.stringify(packageJson, null, 2), "utf8");
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify(packageJson, null, 2),
+      "utf8",
+    );
   }
 }
 
@@ -98,7 +115,11 @@ describe("build", () => {
     await init(dir, { logger });
     const before = (await build(dir, { logger })).output;
 
-    await writeFile(join(dir, "assets", "extra.svg"), `<svg xmlns="http://www.w3.org/2000/svg" />\n`, "utf8");
+    await writeFile(
+      join(dir, "assets", "extra.svg"),
+      `<svg xmlns="http://www.w3.org/2000/svg" />\n`,
+      "utf8",
+    );
     const after = (await build(dir, { logger })).output;
 
     assert.equal(after, before);
@@ -121,10 +142,13 @@ describe("build", () => {
     await assert.rejects(
       () => build(dir, { logger }),
       (error) => {
-        assert.match(error.message, /Asset keys must be static string literals/);
+        assert.match(
+          error.message,
+          /Asset keys must be static string literals/,
+        );
         assert.match(error.message, /tree-shaken/);
         return true;
-      }
+      },
     );
   });
 
@@ -146,7 +170,7 @@ describe("build", () => {
         assert.match(error.message, /missing-icon\.png/);
         assert.match(error.message, /does not exist in the assets\/ directory/);
         return true;
-      }
+      },
     );
   });
 
@@ -174,11 +198,15 @@ export function getInfo() {
 
     const result = await build(dir, { logger });
 
-    const idWarning = result.warnings.find((warning) => warning.includes("custom-id"));
+    const idWarning = result.warnings.find((warning) =>
+      warning.includes("custom-id"),
+    );
     assert.ok(idWarning, "expected an id mismatch warning");
     assert.match(idWarning, /Fluorite\.meta\.id/);
 
-    const nameWarning = result.warnings.find((warning) => warning.includes("Custom name"));
+    const nameWarning = result.warnings.find((warning) =>
+      warning.includes("Custom name"),
+    );
     assert.ok(nameWarning, "expected a name mismatch warning");
     assert.match(nameWarning, /Fluorite\.meta\.name/);
   });
@@ -197,19 +225,33 @@ export function getInfo() {
 
     const result = await build(dir, { logger });
 
-    assert.ok(result.warnings.some((warning) => warning.includes("version") && warning.includes("9.9.9")));
-    assert.ok(result.warnings.some((warning) => warning.includes("license") && warning.includes("MIT")));
-    assert.ok(result.warnings.some((warning) => warning.includes("description")));
+    assert.ok(
+      result.warnings.some(
+        (warning) => warning.includes("version") && warning.includes("9.9.9"),
+      ),
+    );
+    assert.ok(
+      result.warnings.some(
+        (warning) => warning.includes("license") && warning.includes("MIT"),
+      ),
+    );
+    assert.ok(
+      result.warnings.some((warning) => warning.includes("description")),
+    );
 
     assert.ok(
       !result.warnings.some((warning) => /package\.json name/.test(warning)),
-      "name must be exempt from the package.json consistency check"
+      "name must be exempt from the package.json consistency check",
     );
   });
 
   it("fails with a clear error when the entry file is missing", async (t) => {
     const dir = await makeTempProject(t);
-    await writeFile(join(dir, "src", "99-manifest.json"), JSON.stringify(DEFAULT_MANIFEST, null, 2), "utf8");
+    await writeFile(
+      join(dir, "src", "99-manifest.json"),
+      JSON.stringify(DEFAULT_MANIFEST, null, 2),
+      "utf8",
+    );
 
     const { logger } = silentLogger();
     await assert.rejects(
@@ -217,7 +259,7 @@ export function getInfo() {
       (error) => {
         assert.match(error.message, /Missing entry file/);
         return true;
-      }
+      },
     );
   });
 });

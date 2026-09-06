@@ -43,9 +43,15 @@ const MIME_TYPES = new Map([
 
 function parse(source, file) {
   try {
-    return acorn.parse(source, { ecmaVersion: "latest", sourceType: "module", ranges: true });
+    return acorn.parse(source, {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      ranges: true,
+    });
   } catch (error) {
-    throw new Error(`Failed to parse ${file}: ${error.message}`);
+    throw new Error(`Failed to parse ${file}: ${error.message}`, {
+      cause: error,
+    });
   }
 }
 
@@ -58,7 +64,14 @@ function walk(node, visit) {
   if (typeof node.type !== "string") return;
   visit(node);
   for (const key of Object.keys(node)) {
-    if (key === "start" || key === "end" || key === "loc" || key === "range" || key === "type") continue;
+    if (
+      key === "start" ||
+      key === "end" ||
+      key === "loc" ||
+      key === "range" ||
+      key === "type"
+    )
+      continue;
     walk(node[key], visit);
   }
 }
@@ -124,13 +137,25 @@ function analyzeNode(rootNode, runtimeGlobal) {
             if (!block || block.type !== "ObjectExpression") continue;
             for (const blockProp of block.properties) {
               if (blockProp.type !== "Property") continue;
-              if (blockProp.key.type === "Identifier" && blockProp.key.name === "opcode") {
-                if (blockProp.value.type === "Literal" && typeof blockProp.value.value === "string") {
+              if (
+                blockProp.key.type === "Identifier" &&
+                blockProp.key.name === "opcode"
+              ) {
+                if (
+                  blockProp.value.type === "Literal" &&
+                  typeof blockProp.value.value === "string"
+                ) {
                   opcodes.add(blockProp.value.value);
                 }
               }
-              if (blockProp.key.type === "Identifier" && blockProp.key.name === "function") {
-                if (blockProp.value.type === "Literal" && typeof blockProp.value.value === "string") {
+              if (
+                blockProp.key.type === "Identifier" &&
+                blockProp.key.name === "function"
+              ) {
+                if (
+                  blockProp.value.type === "Literal" &&
+                  typeof blockProp.value.value === "string"
+                ) {
                   opcodes.add(blockProp.value.value);
                 } else if (blockProp.value.type === "Identifier") {
                   opcodes.add(blockProp.value.name);
@@ -143,7 +168,13 @@ function analyzeNode(rootNode, runtimeGlobal) {
     }
 
     for (const childKey of Object.keys(node)) {
-      if (childKey === "start" || childKey === "end" || childKey === "loc" || childKey === "range" || childKey === "type") {
+      if (
+        childKey === "start" ||
+        childKey === "end" ||
+        childKey === "loc" ||
+        childKey === "range" ||
+        childKey === "type"
+      ) {
         continue;
       }
       const child = node[childKey];
@@ -163,7 +194,9 @@ async function bundleModules(projectDir) {
   try {
     entrySource = await readFile(entryPath, "utf8");
   } catch {
-    throw new Error(`Missing entry file ${entryPath}. A ${ENTRY_FILE} file is required.`);
+    throw new Error(
+      `Missing entry file ${entryPath}. A ${ENTRY_FILE} file is required.`,
+    );
   }
 
   const modules = [];
@@ -175,7 +208,9 @@ async function bundleModules(projectDir) {
   }
 
   function importError(specifier, path) {
-    throw new Error(`Unsupported import "${specifier}" in ${path}. Only local relative .js imports are supported.`);
+    throw new Error(
+      `Unsupported import "${specifier}" in ${path}. Only local relative .js imports are supported.`,
+    );
   }
 
   async function add(path, isEntry) {
@@ -186,15 +221,20 @@ async function bundleModules(projectDir) {
     seen.add(path);
     stack.push(path);
 
-    const source = isEntry ? entrySource : await readFile(path, "utf8").catch((error) => {
-      throw new Error(`Cannot read module ${path}: ${error.message}`);
-    });
+    const source = isEntry
+      ? entrySource
+      : await readFile(path, "utf8").catch((error) => {
+          throw new Error(`Cannot read module ${path}: ${error.message}`);
+        });
 
     const mod = { path, isEntry, ast: parse(source, path), source };
     modules.push(mod);
 
     for (const node of mod.ast.body) {
-      if (node.type !== "ImportDeclaration" && node.type !== "ExportNamedDeclaration") {
+      if (
+        node.type !== "ImportDeclaration" &&
+        node.type !== "ExportNamedDeclaration"
+      ) {
         continue;
       }
       if (!node.source) continue;
@@ -222,25 +262,52 @@ async function loadManifest(projectDir) {
   try {
     raw = await readFile(manifestPath, "utf8");
   } catch {
-    throw new Error(`Missing manifest file ${manifestPath}. A ${MANIFEST_FILE} file is required.`);
+    throw new Error(
+      `Missing manifest file ${manifestPath}. A ${MANIFEST_FILE} file is required.`,
+    );
   }
 
   let manifest;
   try {
     manifest = JSON.parse(raw);
   } catch (error) {
-    throw new Error(`Manifest ${manifestPath} is not valid JSON: ${error.message}`);
+    throw new Error(
+      `Manifest ${manifestPath} is not valid JSON: ${error.message}`,
+      { cause: error },
+    );
   }
 
   const checks = [
-    ["class", (value) => typeof value === "string" && value.length > 0, "a non-empty string"],
-    ["id", (value) => typeof value === "string" && value.length > 0 && EXTENSION_ID.test(value) && !value.includes(".."), `a string matching ${EXTENSION_ID.toString()} with no ".." sequences`],
-    ["version", (value) => typeof value === "string" && value.length > 0 && EXTENSION_ID.test(value) && !value.includes(".."), `a string matching ${EXTENSION_ID.toString()} with no ".." sequences`],
+    [
+      "class",
+      (value) => typeof value === "string" && value.length > 0,
+      "a non-empty string",
+    ],
+    [
+      "id",
+      (value) =>
+        typeof value === "string" &&
+        value.length > 0 &&
+        EXTENSION_ID.test(value) &&
+        !value.includes(".."),
+      `a string matching ${EXTENSION_ID.toString()} with no ".." sequences`,
+    ],
+    [
+      "version",
+      (value) =>
+        typeof value === "string" &&
+        value.length > 0 &&
+        EXTENSION_ID.test(value) &&
+        !value.includes(".."),
+      `a string matching ${EXTENSION_ID.toString()} with no ".." sequences`,
+    ],
   ];
 
   for (const [field, test, expectation] of checks) {
     if (!test(manifest[field])) {
-      throw new Error(`The manifest field ${JSON.stringify(field)} must be ${expectation} (got ${JSON.stringify(manifest[field])}).`);
+      throw new Error(
+        `The manifest field ${JSON.stringify(field)} must be ${expectation} (got ${JSON.stringify(manifest[field])}).`,
+      );
     }
   }
 
@@ -252,20 +319,33 @@ function entryExportNames(entryModule) {
   for (const node of entryModule.ast.body) {
     if (node.type === "ExportNamedDeclaration") {
       if (node.declaration) {
-        if (node.declaration.type === "FunctionDeclaration" && node.declaration.id) names.push(node.declaration.id.name);
-        if (node.declaration.type === "ClassDeclaration" && node.declaration.id) names.push(node.declaration.id.name);
+        if (
+          node.declaration.type === "FunctionDeclaration" &&
+          node.declaration.id
+        )
+          names.push(node.declaration.id.name);
+        if (node.declaration.type === "ClassDeclaration" && node.declaration.id)
+          names.push(node.declaration.id.name);
         if (node.declaration.type === "VariableDeclaration") {
           for (const declarator of node.declaration.declarations) {
-            if (declarator.id.type === "Identifier") names.push(declarator.id.name);
+            if (declarator.id.type === "Identifier")
+              names.push(declarator.id.name);
           }
         }
       }
       for (const specifier of node.specifiers ?? []) {
         if (specifier.type === "ExportSpecifier") {
-          names.push(specifier.exported.type === "Identifier" ? specifier.exported.name : specifier.exported.value);
+          names.push(
+            specifier.exported.type === "Identifier"
+              ? specifier.exported.name
+              : specifier.exported.value,
+          );
         }
       }
-    } else if (node.type === "ExportDefaultDeclaration" && node.declaration.id) {
+    } else if (
+      node.type === "ExportDefaultDeclaration" &&
+      node.declaration.id
+    ) {
       names.push(node.declaration.id.name);
     }
   }
@@ -273,7 +353,10 @@ function entryExportNames(entryModule) {
 }
 
 function unwrapExport(node) {
-  if (node.type === "ExportNamedDeclaration" || node.type === "ExportDefaultDeclaration") {
+  if (
+    node.type === "ExportNamedDeclaration" ||
+    node.type === "ExportDefaultDeclaration"
+  ) {
     return node.declaration ?? null;
   }
   return node;
@@ -325,7 +408,11 @@ function manifestOpcodes(manifest) {
     for (const block of manifest.blocks) {
       if (typeof block === "string") {
         opcodes.add(block);
-      } else if (block && typeof block === "object" && typeof block.opcode === "string") {
+      } else if (
+        block &&
+        typeof block === "object" &&
+        typeof block.opcode === "string"
+      ) {
         opcodes.add(block.opcode);
       }
     }
@@ -333,14 +420,24 @@ function manifestOpcodes(manifest) {
   return opcodes;
 }
 
-function computeReachability({ modules, entryModule, manifest, runtimeGlobal }) {
+function computeReachability({
+  modules,
+  entryModule,
+  manifest,
+  runtimeGlobal,
+}) {
   const { functions, other } = collectTopLevelBindings(modules);
   const knownOpcodes = manifestOpcodes(manifest);
 
   const retainedFunctions = new Set();
   const retainedDecls = new Set();
 
-  const roots = collectRoots({ entryModule, manifest, functions, opcodes: knownOpcodes });
+  const roots = collectRoots({
+    entryModule,
+    manifest,
+    functions,
+    opcodes: knownOpcodes,
+  });
   const queue = [];
   for (const root of roots) queue.push({ kind: "function", name: root });
 
@@ -352,22 +449,32 @@ function computeReachability({ modules, entryModule, manifest, runtimeGlobal }) 
       const { node } = functions.get(name);
       const { uses, opcodes } = analyzeNode(node, runtimeGlobal);
       for (const use of uses) {
-        if (functions.has(use) && !retainedFunctions.has(use)) queue.push({ kind: "function", name: use });
-        if (other.has(use) && !retainedDecls.has(use) && !declaresIn(other.get(use).node, use)) queue.push({ kind: "decl", name: use });
+        if (functions.has(use) && !retainedFunctions.has(use))
+          queue.push({ kind: "function", name: use });
+        if (
+          other.has(use) &&
+          !retainedDecls.has(use) &&
+          !declaresIn(other.get(use).node, use)
+        )
+          queue.push({ kind: "decl", name: use });
       }
       for (const opcode of opcodes) {
-        if (functions.has(opcode) && !retainedFunctions.has(opcode)) queue.push({ kind: "function", name: opcode });
+        if (functions.has(opcode) && !retainedFunctions.has(opcode))
+          queue.push({ kind: "function", name: opcode });
       }
     } else {
       if (retainedDecls.has(name) || !other.has(name)) continue;
       retainedDecls.add(name);
       const { node } = other.get(name);
-      const declarators = node.type === "VariableDeclaration" ? node.declarations : null;
+      const declarators =
+        node.type === "VariableDeclaration" ? node.declarations : null;
       const scopeNode = declarators ? declarators[0] : node;
       const { uses } = analyzeNode(scopeNode, runtimeGlobal);
       for (const use of uses) {
-        if (functions.has(use) && !retainedFunctions.has(use)) queue.push({ kind: "function", name: use });
-        if (other.has(use) && !retainedDecls.has(use)) queue.push({ kind: "decl", name: use });
+        if (functions.has(use) && !retainedFunctions.has(use))
+          queue.push({ kind: "function", name: use });
+        if (other.has(use) && !retainedDecls.has(use))
+          queue.push({ kind: "decl", name: use });
       }
     }
   }
@@ -379,7 +486,8 @@ function declaresIn(node, name) {
   if (node.type === "ClassDeclaration") return node.id && node.id.name === name;
   if (node.type === "VariableDeclaration") {
     for (const declarator of node.declarations) {
-      if (declarator.id.type === "Identifier" && declarator.id.name === name) return true;
+      if (declarator.id.type === "Identifier" && declarator.id.name === name)
+        return true;
     }
   }
   return false;
@@ -420,7 +528,9 @@ function scanAssets({ modules, runtimeGlobal }) {
         node.object.property.type === "Identifier" &&
         node.object.property.name === "assets"
       ) {
-        dynamicKeys.push(`${runtimeGlobal}.assets.${node.property.type === "Identifier" ? node.property.name : "…"}`);
+        dynamicKeys.push(
+          `${runtimeGlobal}.assets.${node.property.type === "Identifier" ? node.property.name : "…"}`,
+        );
       }
     });
   }
@@ -446,8 +556,13 @@ async function loadAssetCandidates(projectDir) {
     if (!entry.isFile()) continue;
     const file = join(assetsDir, entry.name);
     const data = await readFile(file);
-    const mime = MIME_TYPES.get(extname(entry.name).toLowerCase()) ?? "application/octet-stream";
-    candidates.set(entry.name, `data:${mime};base64,${data.toString("base64")}`);
+    const mime =
+      MIME_TYPES.get(extname(entry.name).toLowerCase()) ??
+      "application/octet-stream";
+    candidates.set(
+      entry.name,
+      `data:${mime};base64,${data.toString("base64")}`,
+    );
   }
   return candidates;
 }
@@ -460,19 +575,29 @@ function checkHardcodedIdName({ modules, manifest, warnings, runtimeGlobal }) {
         if (property.type !== "Property") continue;
         let keyName = null;
         if (property.key.type === "Identifier") keyName = property.key.name;
-        else if (property.key.type === "Literal" && typeof property.key.value === "string") keyName = property.key.value;
+        else if (
+          property.key.type === "Literal" &&
+          typeof property.key.value === "string"
+        )
+          keyName = property.key.value;
         if (keyName !== "id" && keyName !== "name") continue;
         if (property.shorthand) continue;
-        if (!property.value || property.value.type !== "Literal" || typeof property.value.value !== "string") continue;
+        if (
+          !property.value ||
+          property.value.type !== "Literal" ||
+          typeof property.value.value !== "string"
+        )
+          continue;
         if (keyName === "id" && property.value.value === manifest.id) continue;
-        if (keyName === "name" && property.value.value === manifest.name) continue;
+        if (keyName === "name" && property.value.value === manifest.name)
+          continue;
         if (keyName === "id") {
           warnings.push(
-            `Hardcoded id "${property.value.value}" in ${mod.path} does not match the manifest's id (${JSON.stringify(manifest.id)}). Use ${runtimeGlobal}.meta.id instead.`
+            `Hardcoded id "${property.value.value}" in ${mod.path} does not match the manifest's id (${JSON.stringify(manifest.id)}). Use ${runtimeGlobal}.meta.id instead.`,
           );
         } else {
           warnings.push(
-            `Hardcoded name "${property.value.value}" in ${mod.path} does not match the manifest's name (${JSON.stringify(manifest.name)}). Use ${runtimeGlobal}.meta.name instead.`
+            `Hardcoded name "${property.value.value}" in ${mod.path} does not match the manifest's name (${JSON.stringify(manifest.name)}). Use ${runtimeGlobal}.meta.name instead.`,
           );
         }
       }
@@ -483,16 +608,21 @@ function checkHardcodedIdName({ modules, manifest, warnings, runtimeGlobal }) {
 async function checkPackageJson(projectDir, manifest, warnings) {
   let packageJson;
   try {
-    packageJson = JSON.parse(await readFile(join(projectDir, "package.json"), "utf8"));
+    packageJson = JSON.parse(
+      await readFile(join(projectDir, "package.json"), "utf8"),
+    );
   } catch {
     return;
   }
   if (!packageJson || typeof packageJson !== "object") return;
 
   for (const field of ["version", "license", "description"]) {
-    if (typeof packageJson[field] === "string" && packageJson[field] !== String(manifest[field] ?? "")) {
+    if (
+      typeof packageJson[field] === "string" &&
+      packageJson[field] !== String(manifest[field] ?? "")
+    ) {
       warnings.push(
-        `package.json ${field} (${JSON.stringify(packageJson[field])}) differs from the manifest's ${field} (${JSON.stringify(manifest[field])}).`
+        `package.json ${field} (${JSON.stringify(packageJson[field])}) differs from the manifest's ${field} (${JSON.stringify(manifest[field])}).`,
       );
     }
   }
@@ -503,7 +633,7 @@ function buildAssetsObject(references, candidates, runtimeGlobal) {
   for (const key of references) {
     if (!candidates.has(key)) {
       throw new Error(
-        `Referenced asset ${JSON.stringify(key)} does not exist in the ${ASSETS_DIR}/ directory. Every ${runtimeGlobal}.assets["..."] reference must resolve to a real file.`
+        `Referenced asset ${JSON.stringify(key)} does not exist in the ${ASSETS_DIR}/ directory. Every ${runtimeGlobal}.assets["..."] reference must resolve to a real file.`,
       );
     }
     assets[key] = candidates.get(key);
@@ -523,7 +653,8 @@ function methodSource(fn, source) {
 }
 
 function stripsExport(text) {
-  if (text.startsWith("export default ")) return text.slice("export default ".length);
+  if (text.startsWith("export default "))
+    return text.slice("export default ".length);
   if (text.startsWith("export ")) return text.slice("export ".length);
   return text;
 }
@@ -572,11 +703,11 @@ export async function build(projectDir = process.cwd(), options = {}) {
   const { references, dynamicKeys } = scanAssets({ modules, runtimeGlobal });
   if (dynamicKeys.length > 0) {
     throw new Error(
-      `Asset keys must be static string literals (e.g. ${runtimeGlobal}.assets["icon.png"]) so assets can be tree-shaken. Found dynamic asset access: ${dynamicKeys.join(", ")}.`
+      `Asset keys must be static string literals (e.g. ${runtimeGlobal}.assets["icon.png"]) so assets can be tree-shaken. Found dynamic asset access: ${dynamicKeys.join(", ")}.`,
     );
   }
 
-  const { retainedFunctions, retainedDecls, functions, other } = computeReachability({
+  const { retainedFunctions, retainedDecls, functions } = computeReachability({
     modules,
     entryModule,
     manifest,
@@ -587,7 +718,11 @@ export async function build(projectDir = process.cwd(), options = {}) {
   const emitted = new Set();
 
   for (const name of entryExportNames(entryModule)) {
-    if (functions.has(name) && retainedFunctions.has(name) && !emitted.has(name)) {
+    if (
+      functions.has(name) &&
+      retainedFunctions.has(name) &&
+      !emitted.has(name)
+    ) {
       const { node, mod } = functions.get(name);
       methods.push(methodSource(node, mod.source));
       emitted.add(name);
@@ -597,7 +732,12 @@ export async function build(projectDir = process.cwd(), options = {}) {
     for (const bodyNode of mod.ast.body) {
       const node = unwrapExport(bodyNode);
       if (!node || node.type !== "FunctionDeclaration" || !node.id) continue;
-      if (node.type === "FunctionDeclaration" && node.id && retainedFunctions.has(node.id.name) && !emitted.has(node.id.name)) {
+      if (
+        node.type === "FunctionDeclaration" &&
+        node.id &&
+        retainedFunctions.has(node.id.name) &&
+        !emitted.has(node.id.name)
+      ) {
         methods.push(methodSource(node, mod.source));
         emitted.add(node.id.name);
       }
@@ -610,13 +750,22 @@ export async function build(projectDir = process.cwd(), options = {}) {
     for (const bodyNode of mod.ast.body) {
       const node = unwrapExport(bodyNode);
       if (!node) continue;
-      if (node.type !== "VariableDeclaration" && node.type !== "ClassDeclaration") continue;
-      const declarators = node.type === "VariableDeclaration" ? node.declarations : [node];
+      if (
+        node.type !== "VariableDeclaration" &&
+        node.type !== "ClassDeclaration"
+      )
+        continue;
+      const declarators =
+        node.type === "VariableDeclaration" ? node.declarations : [node];
       for (const declarator of declarators) {
         const id =
           declarator.type === "VariableDeclarator"
-            ? declarator.id.type === "Identifier" ? declarator.id.name : null
-            : declarator.id.type === "Identifier" ? declarator.id.name : null;
+            ? declarator.id.type === "Identifier"
+              ? declarator.id.name
+              : null
+            : declarator.id.type === "Identifier"
+              ? declarator.id.name
+              : null;
         if (id && retainedDecls.has(id) && !emittedDecls.has(id)) {
           otherDecls.push(stripsExport(mod.source.slice(node.start, node.end)));
           emittedDecls.add(id);
@@ -633,7 +782,13 @@ export async function build(projectDir = process.cwd(), options = {}) {
     logger.warn(warning);
   }
 
-  const raw = assemble({ manifest, assets, methods, otherDecls, runtimeGlobal });
+  const raw = assemble({
+    manifest,
+    assets,
+    methods,
+    otherDecls,
+    runtimeGlobal,
+  });
 
   let formatted;
   try {
@@ -644,7 +799,9 @@ export async function build(projectDir = process.cwd(), options = {}) {
       objectWrap: "collapse",
     });
   } catch (error) {
-    throw new Error(`Failed to format compiled output: ${error.message}`);
+    throw new Error(`Failed to format compiled output: ${error.message}`, {
+      cause: error,
+    });
   }
 
   const distDir = join(projectDir, DIST_DIR);
@@ -653,5 +810,11 @@ export async function build(projectDir = process.cwd(), options = {}) {
   await writeFile(outFile, formatted, "utf8");
 
   logger.success(`Wrote ${outFile}`);
-  return { file: outFile, warnings, output: formatted, retainedFunctions, retainedDecls };
+  return {
+    file: outFile,
+    warnings,
+    output: formatted,
+    retainedFunctions,
+    retainedDecls,
+  };
 }

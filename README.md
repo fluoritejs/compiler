@@ -41,15 +41,26 @@ my-extension/
 fluorite-compiler <command> [project-dir]
 ```
 
-| Command | Description |
-|---------|-------------|
+| Command | Description                                                                         |
+| ------- | ----------------------------------------------------------------------------------- |
 | `init`  | Scaffold `src/`, `assets/`, and starter files in `[project-dir]` (defaults to cwd). |
-| `build` | Bundle, tree-shake, embed assets, and write `dist/<id>@<version>.js`. |
+| `build` | Bundle, tree-shake, embed assets, and write `dist/<id>@<version>.js`.               |
 
-| Flag | Description |
-|------|-------------|
-| `-h`, `--help` | Show usage information. |
+| Flag              | Description                 |
+| ----------------- | --------------------------- |
+| `-h`, `--help`    | Show usage information.     |
 | `-V`, `--version` | Print the compiler version. |
+
+## Development
+
+```bash
+npm install      # install dependencies
+npm run lint     # ESLint
+npm run format   # auto-format with Prettier
+npm run test     # run the node:test suite
+```
+
+`npm run format:check` and `npm run lint` are enforced in CI for every push and pull request.
 
 ## License
 

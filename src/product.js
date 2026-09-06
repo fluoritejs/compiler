@@ -18,7 +18,8 @@ export async function loadProduct() {
     raw = await readFile(join(productRoot, PRODUCT_FILE), "utf8");
   } catch (error) {
     throw new Error(
-      `Cannot find ${PRODUCT_FILE} next to the product source. Run the compiler from a valid install.`
+      `Cannot find ${PRODUCT_FILE} next to the product source. Run the compiler from a valid install.`,
+      { cause: error },
     );
   }
 
@@ -26,7 +27,10 @@ export async function loadProduct() {
   try {
     product = JSON.parse(raw);
   } catch (error) {
-    throw new Error(`${PRODUCT_FILE} at ${join(productRoot, PRODUCT_FILE)} is not valid JSON: ${error.message}`);
+    throw new Error(
+      `${PRODUCT_FILE} at ${join(productRoot, PRODUCT_FILE)} is not valid JSON: ${error.message}`,
+      { cause: error },
+    );
   }
 
   if (
@@ -40,8 +44,13 @@ export async function loadProduct() {
   if (typeof product.bin !== "string" || !VALID_BIN.test(product.bin)) {
     throw new Error(`${PRODUCT_FILE} must define a valid "bin" name.`);
   }
-  if (typeof product.runtimeGlobal !== "string" || !VALID_GLOBAL.test(product.runtimeGlobal)) {
-    throw new Error(`${PRODUCT_FILE} must define a valid "runtimeGlobal" identifier.`);
+  if (
+    typeof product.runtimeGlobal !== "string" ||
+    !VALID_GLOBAL.test(product.runtimeGlobal)
+  ) {
+    throw new Error(
+      `${PRODUCT_FILE} must define a valid "runtimeGlobal" identifier.`,
+    );
   }
   if (typeof product.description !== "string") {
     throw new Error(`${PRODUCT_FILE} must define a "description" string.`);

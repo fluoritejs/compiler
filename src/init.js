@@ -3,7 +3,12 @@ import { dirname, join } from "node:path";
 import { createLogger } from "./logger.js";
 import { loadProduct } from "./product.js";
 
-export const SCAFFOLD_FILES = ["99-manifest.json", "00-index.js", "01-hello-world.js", "hello-icon.svg"];
+export const SCAFFOLD_FILES = [
+  "99-manifest.json",
+  "00-index.js",
+  "01-hello-world.js",
+  "hello-icon.svg",
+];
 
 export const MANIFEST_TEMPLATE = `${JSON.stringify(
   {
@@ -24,7 +29,7 @@ export const MANIFEST_TEMPLATE = `${JSON.stringify(
     version: "0.1.0",
   },
   null,
-  2
+  2,
 )}\n`;
 
 export const ICON_TEMPLATE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">

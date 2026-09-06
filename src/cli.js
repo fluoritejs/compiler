@@ -9,8 +9,12 @@ import { loadProduct, productRootDir } from "./product.js";
 
 async function productVersion() {
   try {
-    const packageJson = JSON.parse(await readFile(join(productRootDir(), "package.json"), "utf8"));
-    return typeof packageJson.version === "string" ? packageJson.version : "0.0.0";
+    const packageJson = JSON.parse(
+      await readFile(join(productRootDir(), "package.json"), "utf8"),
+    );
+    return typeof packageJson.version === "string"
+      ? packageJson.version
+      : "0.0.0";
   } catch {
     return "0.0.0";
   }
@@ -39,7 +43,9 @@ function printHelp(product) {
 
 async function main(argv) {
   const product = await loadProduct();
-  const logger = createLogger({ color: process.stderr?.isTTY || process.stdout.isTTY });
+  const logger = createLogger({
+    color: process.stderr?.isTTY || process.stdout.isTTY,
+  });
 
   if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
     printHelp(product);
@@ -62,7 +68,9 @@ async function main(argv) {
     return;
   }
 
-  throw new Error(`Unknown command "${command}". Run "${product.bin} --help" for usage.`);
+  throw new Error(
+    `Unknown command "${command}". Run "${product.bin} --help" for usage.`,
+  );
 }
 
 main(process.argv.slice(2)).catch((error) => {

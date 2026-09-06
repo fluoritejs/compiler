@@ -31,21 +31,37 @@ describe("init", () => {
 
     const result = await init(dir, { logger });
 
-    const created = result.created.map((file) => toPosix(relative(dir, file))).sort();
+    const created = result.created
+      .map((file) => toPosix(relative(dir, file)))
+      .sort();
     assert.deepEqual(created, EXPECTED_FILES.map(toPosix).sort());
     assert.equal(errors.length, 0);
 
     for (const file of result.created) {
       assert.ok(
-        messages.some((message) => message.includes(`Created ${toPosix(file)}`)),
-        `expected a Created message for ${file}`
+        messages.some((message) =>
+          message.includes(`Created ${toPosix(file)}`),
+        ),
+        `expected a Created message for ${file}`,
       );
     }
 
-    assert.equal(await readFile(join(dir, "src/99-manifest.json"), "utf8"), MANIFEST_TEMPLATE);
-    assert.equal(await readFile(join(dir, "src/00-index.js"), "utf8"), entryTemplate("Fluorite"));
-    assert.equal(await readFile(join(dir, "src/01-hello-world.js"), "utf8"), helloWorldTemplate());
-    assert.equal(await readFile(join(dir, "assets/hello-icon.svg"), "utf8"), ICON_TEMPLATE);
+    assert.equal(
+      await readFile(join(dir, "src/99-manifest.json"), "utf8"),
+      MANIFEST_TEMPLATE,
+    );
+    assert.equal(
+      await readFile(join(dir, "src/00-index.js"), "utf8"),
+      entryTemplate("Fluorite"),
+    );
+    assert.equal(
+      await readFile(join(dir, "src/01-hello-world.js"), "utf8"),
+      helloWorldTemplate(),
+    );
+    assert.equal(
+      await readFile(join(dir, "assets/hello-icon.svg"), "utf8"),
+      ICON_TEMPLATE,
+    );
 
     for (const file of EXPECTED_FILES) {
       assert.ok(existsSync(join(dir, file)), `expected ${file} to exist`);
@@ -66,13 +82,17 @@ describe("init", () => {
     assert.equal(second.skipped.length, 4);
     assert.equal(errors.length, 0);
 
-    const skippedRelative = second.skipped.map((file) => toPosix(relative(dir, file))).sort();
+    const skippedRelative = second.skipped
+      .map((file) => toPosix(relative(dir, file)))
+      .sort();
     assert.deepEqual(skippedRelative, EXPECTED_FILES.map(toPosix).sort());
 
     for (const file of second.skipped) {
       assert.ok(
-        messages.some((message) => message.includes(`Skipped ${toPosix(file)} (already exists)`)),
-        `expected a skip message for ${file}`
+        messages.some((message) =>
+          message.includes(`Skipped ${toPosix(file)} (already exists)`),
+        ),
+        `expected a skip message for ${file}`,
       );
     }
   });

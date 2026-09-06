@@ -14,7 +14,9 @@ export async function makeTempProject(t) {
 
 export async function writeFileRel(dir, relative, content) {
   const path = join(dir, relative);
-  await mkdir(join(dir, relative.split("/").slice(0, -1).join("/")), { recursive: true });
+  await mkdir(join(dir, relative.split("/").slice(0, -1).join("/")), {
+    recursive: true,
+  });
   await writeFile(path, content, "utf8");
 }
 
