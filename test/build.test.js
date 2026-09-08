@@ -2,10 +2,32 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 import { build, init } from "../src/index.js";
 import { GOLDEN_OUTPUT } from "./fixtures/golden-output.js";
 import { makeTempProject, silentLogger } from "./helpers.js";
+
+const CLI_PATH = fileURLToPath(new URL("../src/cli.js", import.meta.url));
+
+function runCli(args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [CLI_PATH, ...args], {
+      cwd: process.cwd(),
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    child.on("error", reject);
+    child.on("close", (code) => resolve({ code, stdout, stderr }));
+  });
+}
 
 const DEFAULT_MANIFEST = {
   class: "HelloWorld",
@@ -172,6 +194,24 @@ describe("build", () => {
         return true;
       },
     );
+  });
+
+  it("exits non-zero with a missing asset error through the CLI", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `export function getInfo() {
+  return {
+    blockIconURI: Fluorite.assets["missing-icon.png"],
+    blocks: [],
+  };
+}
+`;
+    await writeProject(dir, { entry });
+
+    const { code, stderr } = await runCli(["build", dir]);
+
+    assert.notEqual(code, 0);
+    assert.match(stderr, /missing-icon\.png/);
+    assert.match(stderr, /does not exist in the assets\/ directory/);
   });
 
   it("warns when hardcoded id/name literals differ from the manifest", async (t) => {
