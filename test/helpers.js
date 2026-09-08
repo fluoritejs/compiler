@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -10,14 +10,6 @@ export async function makeTempProject(t) {
   await mkdir(join(dir, "src"), { recursive: true });
   await mkdir(join(dir, "assets"), { recursive: true });
   return dir;
-}
-
-export async function writeFileRel(dir, relative, content) {
-  const path = join(dir, relative);
-  await mkdir(join(dir, relative.split("/").slice(0, -1).join("/")), {
-    recursive: true,
-  });
-  await writeFile(path, content, "utf8");
 }
 
 export function silentLogger() {
