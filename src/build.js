@@ -242,10 +242,12 @@ async function bundleModules(projectDir) {
       }
       if (node.type === "ImportDeclaration") {
         for (const specifier of node.specifiers) {
-          if (
-            specifier.type === "ImportSpecifier" &&
-            specifier.imported.name !== specifier.local.name
-          ) {
+          if (specifier.type !== "ImportSpecifier") {
+            throw new Error(
+              `Unsupported ${specifier.type} in ${path}. Only named imports without aliases are supported.`,
+            );
+          }
+          if (specifier.imported.name !== specifier.local.name) {
             throw new Error(
               `Unsupported aliased import "${specifier.imported.name} as ${specifier.local.name}" in ${path}. Imported bindings must use their original exported names.`,
             );

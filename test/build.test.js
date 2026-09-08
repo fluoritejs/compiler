@@ -249,6 +249,44 @@ export function getInfo() {
     );
   });
 
+  it("rejects default imports as a build error", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import hello from "./01-hello-world.js";
+
+export function getInfo() {
+  return { blocks: [{ opcode: "hello", blockType: Scratch.BlockType.REPORTER, text: hello() }] };
+}
+`;
+    await writeProject(dir, { entry });
+    const { logger } = silentLogger();
+    await assert.rejects(
+      () => build(dir, { logger }),
+      (error) => {
+        assert.match(error.message, /Unsupported ImportDefaultSpecifier/);
+        return true;
+      },
+    );
+  });
+
+  it("rejects namespace imports as a build error", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import * as hello from "./01-hello-world.js";
+
+export function getInfo() {
+  return { blocks: [{ opcode: "hello", blockType: Scratch.BlockType.REPORTER, text: hello() }] };
+}
+`;
+    await writeProject(dir, { entry });
+    const { logger } = silentLogger();
+    await assert.rejects(
+      () => build(dir, { logger }),
+      (error) => {
+        assert.match(error.message, /Unsupported ImportNamespaceSpecifier/);
+        return true;
+      },
+    );
+  });
+
   it("rejects dynamic asset keys as a build error", async (t) => {
     const dir = await makeTempProject(t);
     const entry = `export function getInfo() {
