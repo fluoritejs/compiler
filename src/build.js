@@ -484,10 +484,7 @@ function computeReachability({
       if (retainedDecls.has(name) || !other.has(name)) continue;
       retainedDecls.add(name);
       const { node } = other.get(name);
-      const declarators =
-        node.type === "VariableDeclaration" ? node.declarations : null;
-      const scopeNode = declarators ? declarators[0] : node;
-      const { uses } = analyzeNode(scopeNode, runtimeGlobal);
+      const { uses } = analyzeNode(node, runtimeGlobal);
       for (const use of uses) {
         if (functions.has(use) && !retainedFunctions.has(use))
           queue.push({ kind: "function", name: use });

@@ -156,6 +156,34 @@ export function hello() {
     assert.ok(result.output.includes("GREETING"));
   });
 
+  it("retains dependencies of later declarators in a shared declaration", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import { pick } from "./01-hello-world.js";
+
+export function getInfo() {
+  return {
+    blocks: [],
+    value: pick(),
+  };
+}
+`;
+    const module = `export const OTHER = "other";
+
+export const A = "unrelated", B = OTHER;
+
+export function pick() {
+  return B;
+}
+`;
+    await writeProject(dir, { entry, module });
+    const { logger } = silentLogger();
+
+    const result = await build(dir, { logger });
+
+    assert.match(result.output, /const OTHER = "other"/);
+    assert.match(result.output, /B = OTHER/);
+  });
+
   it("excludes unreferenced assets without changing the output", async (t) => {
     const dir = await makeTempProject(t);
     const { logger } = silentLogger();
