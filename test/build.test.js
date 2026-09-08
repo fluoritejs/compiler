@@ -130,6 +130,32 @@ describe("build", () => {
     assert.ok(result.output.includes("getInfo()"));
   });
 
+  it("retains a top-level const reachable from an entry function", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import { hello } from "./01-hello-world.js";
+
+export function getInfo() {
+  return {
+    blockIconURI: Fluorite.assets["hello-icon.svg"],
+    blocks: [],
+    greeting: hello(),
+  };
+}
+`;
+    const module = `export const GREETING = "World!";
+
+export function hello() {
+  return GREETING;
+}
+`;
+    await writeProject(dir, { entry, module });
+    const { logger } = silentLogger();
+
+    const result = await build(dir, { logger });
+
+    assert.ok(result.output.includes("GREETING"));
+  });
+
   it("excludes unreferenced assets without changing the output", async (t) => {
     const dir = await makeTempProject(t);
     const { logger } = silentLogger();
