@@ -403,4 +403,36 @@ export function getInfo() {
       },
     );
   });
+
+  it("emits imported const declarations before entry const initializers", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import { B } from "./01-hello-world.js";
+
+export const A = B;
+
+export function getInfo() {
+  return {
+    blocks: [],
+    text: A,
+  };
+}
+`;
+    const module = `export const C = "hello";
+
+export const B = C;
+`;
+    await writeProject(dir, { entry, module });
+    const { logger } = silentLogger();
+
+    const result = await build(dir, { logger });
+
+    const bIndex = result.output.indexOf("const B = C");
+    const aIndex = result.output.indexOf("const A = B");
+    assert.ok(bIndex > 0, "B declaration should be present");
+    assert.ok(aIndex > 0, "A declaration should be present");
+    assert.ok(
+      bIndex < aIndex,
+      "imported const B should be emitted before entry const A",
+    );
+  });
 });
