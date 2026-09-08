@@ -233,7 +233,8 @@ async function bundleModules(projectDir) {
     for (const node of mod.ast.body) {
       if (
         node.type !== "ImportDeclaration" &&
-        node.type !== "ExportNamedDeclaration"
+        node.type !== "ExportNamedDeclaration" &&
+        node.type !== "ExportAllDeclaration"
       ) {
         continue;
       }
