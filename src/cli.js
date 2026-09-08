@@ -60,6 +60,11 @@ async function main(argv) {
   }
 
   const [command, targetDir] = argv;
+  if (typeof targetDir === "string" && targetDir.startsWith("-")) {
+    throw new Error(
+      `Unknown project directory "${targetDir}". Run "${product.bin} --help" for usage.`,
+    );
+  }
   const dir = targetDir || process.cwd();
 
   if (command === "init") {
