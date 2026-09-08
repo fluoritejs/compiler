@@ -700,7 +700,7 @@ function assemble({ manifest, assets, methods, otherDecls, runtimeGlobal }) {
     head.push(`    ${method}`);
     head.push("");
   }
-  head.pop();
+  if (methods.length > 0) head.pop();
   head.push("  }");
   head.push("");
   head.push(`  Scratch.extensions.register(new ${manifest.class}());`);
