@@ -280,8 +280,12 @@ async function loadManifest(projectDir) {
   const checks = [
     [
       "class",
-      (value) => typeof value === "string" && value.length > 0,
-      "a non-empty string",
+      (value) =>
+        typeof value === "string" &&
+        value.length > 0 &&
+        EXTENSION_ID.test(value) &&
+        !value.includes(".."),
+      `a string matching ${EXTENSION_ID.toString()} with no ".." sequences`,
     ],
     [
       "id",
