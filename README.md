@@ -26,7 +26,6 @@ The compiled file is written to `dist/<id>@<version>.js`.
 
 ```text
 my-extension/
-├── .product.json          # (compiler repo only)
 ├── src/
 │   ├── 00-index.js        # entry point — exports getInfo() + block handlers
 │   ├── 01-hello-world.js  # your modules, imported by 00-index.js
