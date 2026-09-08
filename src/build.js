@@ -214,10 +214,10 @@ async function bundleModules(projectDir) {
   }
 
   async function add(path, isEntry) {
-    if (seen.has(path)) return;
     if (stack.includes(path)) {
       throw new Error(`Circular import detected involving ${path}.`);
     }
+    if (seen.has(path)) return;
     seen.add(path);
     stack.push(path);
 
