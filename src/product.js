@@ -8,18 +8,12 @@ const productRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const VALID_BIN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const VALID_GLOBAL = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
-/**
- * Get the root directory containing the product metadata.
- * @return {string} The product root directory.
- */
 export function productRootDir() {
   return productRoot;
 }
 
 /**
- * Loads and validates product metadata from the product configuration file.
- * @returns {object} The validated product metadata.
- * @throws {Error} If the configuration file cannot be read, contains invalid JSON, or has invalid metadata.
+ * Loads and validates `.product.json`, throwing on missing or invalid metadata.
  */
 export async function loadProduct() {
   let raw;
