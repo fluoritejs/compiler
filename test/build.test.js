@@ -227,6 +227,28 @@ export function pick() {
     assert.equal(after, GOLDEN_OUTPUT);
   });
 
+  it("rejects aliased named imports as a build error", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import { hello as hi } from "./01-hello-world.js";
+
+export function getInfo() {
+  return {
+    blockIconURI: Fluorite.assets["hello-icon.svg"],
+    blocks: [{ opcode: "hello", blockType: Scratch.BlockType.REPORTER, text: hi() }],
+  };
+}
+`;
+    await writeProject(dir, { entry });
+    const { logger } = silentLogger();
+    await assert.rejects(
+      () => build(dir, { logger }),
+      (error) => {
+        assert.match(error.message, /Unsupported aliased import/);
+        return true;
+      },
+    );
+  });
+
   it("rejects dynamic asset keys as a build error", async (t) => {
     const dir = await makeTempProject(t);
     const entry = `export function getInfo() {
