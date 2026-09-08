@@ -240,6 +240,18 @@ async function bundleModules(projectDir) {
       ) {
         continue;
       }
+      if (node.type === "ImportDeclaration") {
+        for (const specifier of node.specifiers) {
+          if (
+            specifier.type === "ImportSpecifier" &&
+            specifier.imported.name !== specifier.local.name
+          ) {
+            throw new Error(
+              `Unsupported aliased import "${specifier.imported.name} as ${specifier.local.name}" in ${path}. Imported bindings must use their original exported names.`,
+            );
+          }
+        }
+      }
       if (!node.source) continue;
       const specifierPath = node.source.value;
       if (!isLocalRelative(specifierPath)) {
