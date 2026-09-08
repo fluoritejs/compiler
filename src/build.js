@@ -377,15 +377,30 @@ function collectTopLevelBindings(modules) {
       if (!node) continue;
       if (node.type === "FunctionDeclaration" && node.id) {
         const name = node.id.name;
-        if (!functions.has(name)) functions.set(name, { node, mod });
+        if (functions.has(name)) {
+          throw new Error(
+            `Duplicate binding "${name}" found in ${mod.path} and ${functions.get(name).mod.path}.`,
+          );
+        }
+        functions.set(name, { node, mod });
       } else if (node.type === "ClassDeclaration" && node.id) {
         const name = node.id.name;
-        if (!other.has(name)) other.set(name, { node, mod });
+        if (other.has(name)) {
+          throw new Error(
+            `Duplicate binding "${name}" found in ${mod.path} and ${other.get(name).mod.path}.`,
+          );
+        }
+        other.set(name, { node, mod });
       } else if (node.type === "VariableDeclaration") {
         for (const declarator of node.declarations) {
           if (declarator.id.type === "Identifier") {
             const name = declarator.id.name;
-            if (!other.has(name)) other.set(name, { node, mod });
+            if (other.has(name)) {
+              throw new Error(
+                `Duplicate binding "${name}" found in ${mod.path} and ${other.get(name).mod.path}.`,
+              );
+            }
+            other.set(name, { node, mod });
           }
         }
       }
