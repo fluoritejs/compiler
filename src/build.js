@@ -12,6 +12,7 @@ const ASSETS_DIR = "assets";
 const DIST_DIR = "dist";
 
 const EXTENSION_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const JS_IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 const MIME_TYPES = new Map([
   [".svg", "image/svg+xml"],
@@ -298,9 +299,8 @@ async function loadManifest(projectDir) {
       (value) =>
         typeof value === "string" &&
         value.length > 0 &&
-        EXTENSION_ID.test(value) &&
-        !value.includes(".."),
-      `a string matching ${EXTENSION_ID.toString()} with no ".." sequences`,
+        JS_IDENTIFIER.test(value),
+      `a valid JavaScript identifier (${JS_IDENTIFIER.toString()})`,
     ],
     [
       "id",
@@ -755,7 +755,10 @@ export async function build(projectDir = process.cwd(), options = {}) {
   const emitted = new Set();
   const emittedDecls = new Set();
 
-  for (const mod of modules) {
+  for (const mod of [
+    entryModule,
+    ...modules.filter((m) => m !== entryModule),
+  ]) {
     for (const bodyNode of mod.ast.body) {
       const node = unwrapExport(bodyNode);
       if (!node) continue;
