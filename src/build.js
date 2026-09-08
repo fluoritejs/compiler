@@ -473,8 +473,7 @@ function computeReachability({
           queue.push({ kind: "function", name: use });
         if (
           other.has(use) &&
-          !retainedDecls.has(use) &&
-          !declaresIn(other.get(use).node, use)
+          !retainedDecls.has(use)
         )
           queue.push({ kind: "decl", name: use });
       }
@@ -500,17 +499,6 @@ function computeReachability({
   }
 
   return { retainedFunctions, retainedDecls, functions, other };
-}
-
-function declaresIn(node, name) {
-  if (node.type === "ClassDeclaration") return node.id && node.id.name === name;
-  if (node.type === "VariableDeclaration") {
-    for (const declarator of node.declarations) {
-      if (declarator.id.type === "Identifier" && declarator.id.name === name)
-        return true;
-    }
-  }
-  return false;
 }
 
 function scanAssets({ modules, runtimeGlobal }) {
