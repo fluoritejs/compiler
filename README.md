@@ -24,7 +24,7 @@ The compiled file is written to `dist/<id>@<version>.js`.
 
 ## Project layout
 
-```
+```text
 my-extension/
 ├── .product.json          # (compiler repo only)
 ├── src/
@@ -37,7 +37,7 @@ my-extension/
 
 ## CLI
 
-```
+```text
 fluorite-compiler <command> [project-dir]
 ```
 
