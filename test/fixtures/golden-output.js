@@ -1,3 +1,4 @@
+// This fixture is regenerated from a build and must stay byte-for-byte stable.
 export const GOLDEN_OUTPUT = `(function (Scratch) {
   "use strict";
 

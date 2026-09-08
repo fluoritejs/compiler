@@ -29,6 +29,6 @@
   },
   "dependencies": {
     "acorn": "^8.15.0",
-    "prettier": "^3.9.6"
+    "prettier": "3.9.6"
   }
 }
