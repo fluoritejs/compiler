@@ -73,13 +73,13 @@ describe("init", () => {
     const { logger, errors, messages } = silentLogger();
 
     const first = await init(dir, { logger });
-    assert.equal(first.created.length, 4);
+    assert.equal(first.created.length, EXPECTED_FILES.length);
     assert.equal(first.skipped.length, 0);
 
     const second = await init(dir, { logger });
 
     assert.equal(second.created.length, 0);
-    assert.equal(second.skipped.length, 4);
+    assert.equal(second.skipped.length, EXPECTED_FILES.length);
     assert.equal(errors.length, 0);
 
     const skippedRelative = second.skipped
