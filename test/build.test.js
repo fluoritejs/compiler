@@ -130,6 +130,31 @@ describe("build", () => {
     assert.ok(result.output.includes("getInfo()"));
   });
 
+  it("emits retained helper functions as top-level declarations", async (t) => {
+    const dir = await makeTempProject(t);
+    const entry = `import { helper } from "./01-hello-world.js";
+
+export function getInfo() {
+  return {
+    blockIconURI: Fluorite.assets["hello-icon.svg"],
+    blocks: [],
+    text: helper("x"),
+  };
+}
+`;
+    const module = `export function helper(prefix) {
+  return prefix + "!";
+}
+`;
+    await writeProject(dir, { entry, module });
+    const { logger } = silentLogger();
+
+    const result = await build(dir, { logger });
+
+    assert.match(result.output, /function helper\(prefix\)/);
+    assert.ok(!/ {2}helper\(prefix\) \{/.test(result.output));
+  });
+
   it("retains a top-level const reachable from an entry function", async (t) => {
     const dir = await makeTempProject(t);
     const entry = `import { hello } from "./01-hello-world.js";
