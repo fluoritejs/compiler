@@ -37,6 +37,11 @@ export const ICON_TEMPLATE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
 </svg>
 `;
 
+/**
+ * Generates the extension entry-module source for the specified runtime global.
+ * @param {string} runtimeGlobal - The global object used to access extension metadata and assets.
+ * @return {string} The generated entry-module source.
+ */
 export function entryTemplate(runtimeGlobal) {
   return `import { hello } from "./01-hello-world.js";
 
@@ -57,6 +62,10 @@ export function getInfo() {
 `;
 }
 
+/**
+ * Generates source code for the scaffolded hello-world module.
+ * @return {string} The module source containing `hello` and `unusedFunction` exports.
+ */
 export function helloWorldTemplate() {
   return `export function hello() {
   return "World!";
@@ -68,6 +77,14 @@ export function unusedFunction() {
 `;
 }
 
+/**
+ * Creates missing scaffold files in the target directory.
+ * @param {string} targetDir - The directory where scaffold files are created.
+ * @param {object} product - Product metadata used to generate the entry module.
+ * @param {string} product.runtimeGlobal - Runtime global referenced by the generated entry module.
+ * @returns {Promise<{created: string[], skipped: string[]}>} The created and skipped file paths.
+ * @throws {Error} Propagates filesystem errors other than existing-file errors.
+ */
 export async function scaffoldFiles(targetDir, { product, logger }) {
   const files = new Map([
     [join("src", "99-manifest.json"), MANIFEST_TEMPLATE],
@@ -99,6 +116,14 @@ export async function scaffoldFiles(targetDir, { product, logger }) {
   return { created, skipped };
 }
 
+/**
+ * Initializes a project by creating its scaffold files.
+ * @param {string} [targetDir=process.cwd()] - The directory in which to create the project files.
+ * @param {Object} [options] - Initialization options.
+ * @param {Object} [options.logger] - Logger used during scaffolding.
+ * @param {Object} [options.product] - Product metadata used to generate the scaffold.
+ * @return {Promise<{created: string[], skipped: string[]}>} The created and skipped file paths.
+ */
 export async function init(targetDir = process.cwd(), options = {}) {
   const logger = options.logger ?? createLogger();
   const product = options.product ?? (await loadProduct());

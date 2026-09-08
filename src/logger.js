@@ -1,3 +1,11 @@
+/**
+ * Creates a logger that writes formatted messages to configurable output and error streams.
+ * @param {Object} [options] - Logger configuration.
+ * @param {NodeJS.WritableStream} [options.out=process.stdout] - Stream for success and skipped messages.
+ * @param {NodeJS.WritableStream} [options.err=process.stderr] - Stream for error and warning messages.
+ * @param {boolean|{out?: boolean, err?: boolean}} [options.color=false] - Enables coloring globally or separately for each stream.
+ * @returns {{error(message: string): void, warn(message: string): void, success(message: string): void, skip(message: string): void}} Logger methods for writing formatted messages.
+ */
 export function createLogger({
   out = process.stdout,
   err = process.stderr,
