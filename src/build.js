@@ -597,8 +597,8 @@ function checkHardcodedIdName({ modules, manifest, warnings, runtimeGlobal }) {
           typeof property.value.value !== "string"
         )
           continue;
-        if (keyName === "id" && property.value.value === manifest.id) continue;
-        if (keyName === "name" && property.value.value === manifest.name)
+        if (keyName === "id" && typeof manifest.id === "string" && property.value.value === manifest.id) continue;
+        if (keyName === "name" && typeof manifest.name === "string" && property.value.value === manifest.name)
           continue;
         if (keyName === "id") {
           warnings.push(
