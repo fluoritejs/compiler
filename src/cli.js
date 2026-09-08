@@ -57,6 +57,10 @@ async function main(argv) {
   }
 
   const [command, targetDir] = argv;
+  if (argv.includes("--help") || argv.includes("-h")) {
+    printHelp(product);
+    return;
+  }
   if (typeof targetDir === "string" && targetDir.startsWith("-")) {
     throw new Error(
       `Unknown project directory "${targetDir}". Run "${product.bin} --help" for usage.`,
