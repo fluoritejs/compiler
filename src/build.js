@@ -95,7 +95,7 @@ function analyzeNode(rootNode, runtimeGlobal) {
       case "MemberExpression":
         return parent.computed ? key !== "object" : key !== "property";
       case "Property":
-        return key === "value";
+        return parent.computed ? key === "key" || key === "value" : key === "value";
       case "ImportSpecifier":
       case "ImportDefaultSpecifier":
       case "ImportNamespaceSpecifier":
@@ -107,7 +107,7 @@ function analyzeNode(rootNode, runtimeGlobal) {
       case "ContinueStatement":
         return key !== "label";
       case "MethodDefinition":
-        return key !== "key";
+        return parent.computed ? key === "key" : false;
       default:
         return true;
     }
