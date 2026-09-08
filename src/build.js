@@ -665,6 +665,7 @@ function buildAssetsObject(references, candidates, runtimeGlobal) {
 function methodSource(fn, source) {
   const parts = [];
   if (fn.async) parts.push("async");
+  if (fn.generator) parts.push("*");
   parts.push(`${fn.id.name}`);
   const params = fn.params.length
     ? source.slice(fn.params[0].start, fn.params[fn.params.length - 1].end)
