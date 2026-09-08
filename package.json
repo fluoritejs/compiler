@@ -1,0 +1,38 @@
+{
+  "name": "fluorite-compiler",
+  "version": "0.1.0",
+  "description": "A Node CLI to compile multiple JavaScript files into a TurboWarp extension.",
+  "homepage": "https://github.com/fluoritejs/compiler#readme",
+  "bugs": {
+    "url": "https://github.com/fluoritejs/compiler/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fluoritejs/compiler.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Fluorite",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": "src/cli.js",
+  "files": [
+    "src",
+    ".product.json"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "skills": "^1.5.23"
+  },
+  "dependencies": {
+    "acorn": "^8.15.0",
+    "prettier": "3.9.6"
+  }
+}
