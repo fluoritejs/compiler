@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { createLogger } from "./logger.js";
 import { loadProduct } from "./product.js";
@@ -81,20 +81,18 @@ export async function scaffoldFiles(targetDir, { product, logger }) {
 
   for (const [relative, content] of files) {
     const file = join(targetDir, relative);
-    let ok = true;
+    await mkdir(dirname(file), { recursive: true });
     try {
-      await readFile(file, "utf8");
-    } catch {
-      ok = false;
-    }
-    if (ok) {
-      skipped.push(file);
-      logger.skip(`Skipped ${file} (already exists)`);
-    } else {
-      await mkdir(dirname(file), { recursive: true });
-      await writeFile(file, content, "utf8");
+      await writeFile(file, content, { flag: "wx" });
       created.push(file);
       logger.success(`Created ${file}`);
+    } catch (error) {
+      if (error?.code === "EEXIST") {
+        skipped.push(file);
+        logger.skip(`Skipped ${file} (already exists)`);
+        continue;
+      }
+      throw error;
     }
   }
 
