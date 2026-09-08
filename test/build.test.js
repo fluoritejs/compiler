@@ -88,9 +88,9 @@ describe("build", () => {
 
     await init(dir, { logger });
     const result = await build(dir, { logger });
-    void warnings;
 
     assert.equal(errors.length, 0);
+    assert.equal(warnings.length, 0);
     assert.match(result.file, /dist[\\/]helloworld@0\.1\.0\.js$/);
     assert.equal(result.output, GOLDEN_OUTPUT);
     assert.equal(await readFile(result.file, "utf8"), GOLDEN_OUTPUT);
