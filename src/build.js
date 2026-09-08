@@ -230,7 +230,6 @@ async function bundleModules(projectDir) {
         });
 
     const mod = { path, isEntry, ast: parse(source, path), source };
-    modules.push(mod);
 
     for (const node of mod.ast.body) {
       if (
@@ -264,6 +263,7 @@ async function bundleModules(projectDir) {
       await add(resolvedPath, false);
     }
 
+    modules.push(mod);
     stack.pop();
   }
 
