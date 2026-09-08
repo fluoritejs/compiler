@@ -82,12 +82,18 @@ main(process.argv.slice(2)).catch((error) => {
   const logger = createLogger({
     color: { out: false, err: !!process.stderr?.isTTY },
   });
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : JSON.stringify(error);
+  let message;
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === "string") {
+    message = error;
+  } else {
+    try {
+      message = JSON.stringify(error);
+    } catch {
+      message = String(error);
+    }
+  }
   logger.error(message);
   if (error instanceof Error && error.cause) {
     logger.error(
