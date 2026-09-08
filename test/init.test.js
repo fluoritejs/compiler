@@ -10,6 +10,7 @@ import {
   entryTemplate,
   helloWorldTemplate,
   init,
+  loadProduct,
 } from "../src/index.js";
 import { makeTempProject, silentLogger } from "./helpers.js";
 
@@ -28,8 +29,9 @@ describe("init", () => {
   it("scaffolds exactly the expected files", async (t) => {
     const dir = await makeTempProject(t);
     const { logger, errors, messages } = silentLogger();
+    const product = await loadProduct();
 
-    const result = await init(dir, { logger });
+    const result = await init(dir, { logger, product });
 
     const created = result.created
       .map((file) => toPosix(relative(dir, file)))
@@ -52,7 +54,7 @@ describe("init", () => {
     );
     assert.equal(
       await readFile(join(dir, "src/00-index.js"), "utf8"),
-      entryTemplate("Fluorite"),
+      entryTemplate(product.runtimeGlobal),
     );
     assert.equal(
       await readFile(join(dir, "src/01-hello-world.js"), "utf8"),
