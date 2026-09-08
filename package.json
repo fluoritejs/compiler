@@ -15,7 +15,10 @@
   "type": "module",
   "main": "src/index.js",
   "bin": "src/cli.js",
-  "files": ["src", ".product.json"],
+  "files": [
+    "src",
+    ".product.json"
+  ],
   "scripts": {
     "test": "node --test \"test/*.test.js\"",
     "lint": "eslint .",
