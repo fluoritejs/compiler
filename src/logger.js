@@ -3,8 +3,10 @@ export function createLogger({
   err = process.stderr,
   color = false,
 } = {}) {
-  const outColor = typeof color === "object" && color !== null ? !!color.out : !!color;
-  const errColor = typeof color === "object" && color !== null ? !!color.err : !!color;
+  const outColor =
+    typeof color === "object" && color !== null ? !!color.out : !!color;
+  const errColor =
+    typeof color === "object" && color !== null ? !!color.err : !!color;
   const outStyle = (open, close) => (string) =>
     outColor ? `${open}${string}${close}` : string;
   const outDim = outStyle("\u001b[2m", "\u001b[22m");

@@ -95,7 +95,9 @@ function analyzeNode(rootNode, runtimeGlobal) {
       case "MemberExpression":
         return parent.computed ? key !== "object" : key !== "property";
       case "Property":
-        return parent.computed ? key === "key" || key === "value" : key === "value";
+        return parent.computed
+          ? key === "key" || key === "value"
+          : key === "value";
       case "ImportSpecifier":
       case "ImportDefaultSpecifier":
       case "ImportNamespaceSpecifier":
@@ -471,10 +473,7 @@ function computeReachability({
       for (const use of uses) {
         if (functions.has(use) && !retainedFunctions.has(use))
           queue.push({ kind: "function", name: use });
-        if (
-          other.has(use) &&
-          !retainedDecls.has(use)
-        )
+        if (other.has(use) && !retainedDecls.has(use))
           queue.push({ kind: "decl", name: use });
       }
       for (const opcode of opcodes) {
@@ -597,8 +596,17 @@ function checkHardcodedIdName({ modules, manifest, warnings, runtimeGlobal }) {
           typeof property.value.value !== "string"
         )
           continue;
-        if (keyName === "id" && typeof manifest.id === "string" && property.value.value === manifest.id) continue;
-        if (keyName === "name" && typeof manifest.name === "string" && property.value.value === manifest.name)
+        if (
+          keyName === "id" &&
+          typeof manifest.id === "string" &&
+          property.value.value === manifest.id
+        )
+          continue;
+        if (
+          keyName === "name" &&
+          typeof manifest.name === "string" &&
+          property.value.value === manifest.name
+        )
           continue;
         if (keyName === "id") {
           warnings.push(
