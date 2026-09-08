@@ -93,7 +93,7 @@ function analyzeNode(rootNode, runtimeGlobal) {
       case "VariableDeclarator":
         return key !== "id";
       case "MemberExpression":
-        return parent.computed ? key !== "object" : key !== "property";
+        return key === "object" || parent.computed;
       case "Property":
         return parent.computed
           ? key === "key" || key === "value"
