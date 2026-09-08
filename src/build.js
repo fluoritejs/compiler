@@ -626,9 +626,10 @@ async function checkPackageJson(projectDir, manifest, warnings) {
   if (!packageJson || typeof packageJson !== "object") return;
 
   for (const field of ["version", "license", "description"]) {
+    if (typeof packageJson[field] !== "string") continue;
     if (
-      typeof packageJson[field] === "string" &&
-      packageJson[field] !== String(manifest[field] ?? "")
+      typeof manifest[field] === "string" &&
+      packageJson[field] !== manifest[field]
     ) {
       warnings.push(
         `package.json ${field} (${JSON.stringify(packageJson[field])}) differs from the manifest's ${field} (${JSON.stringify(manifest[field])}).`,
