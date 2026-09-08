@@ -453,6 +453,7 @@ function computeReachability({
 
   const retainedFunctions = new Set();
   const retainedDecls = new Set();
+  const methodFunctions = new Set();
 
   const roots = collectRoots({
     entryModule,
@@ -461,7 +462,10 @@ function computeReachability({
     opcodes: knownOpcodes,
   });
   const queue = [];
-  for (const root of roots) queue.push({ kind: "function", name: root });
+  for (const root of roots) {
+    queue.push({ kind: "function", name: root });
+    if (functions.has(root)) methodFunctions.add(root);
+  }
 
   while (queue.length > 0) {
     const { kind, name } = queue.shift();
@@ -477,8 +481,10 @@ function computeReachability({
           queue.push({ kind: "decl", name: use });
       }
       for (const opcode of opcodes) {
-        if (functions.has(opcode) && !retainedFunctions.has(opcode))
+        if (functions.has(opcode) && !retainedFunctions.has(opcode)) {
+          methodFunctions.add(opcode);
           queue.push({ kind: "function", name: opcode });
+        }
       }
     } else {
       if (retainedDecls.has(name) || !other.has(name)) continue;
@@ -494,7 +500,13 @@ function computeReachability({
     }
   }
 
-  return { retainedFunctions, retainedDecls, functions, other };
+  return {
+    retainedFunctions,
+    retainedDecls,
+    methodFunctions,
+    functions,
+    other,
+  };
 }
 
 function scanAssets({ modules, runtimeGlobal }) {
@@ -723,45 +735,30 @@ export async function build(projectDir = process.cwd(), options = {}) {
     );
   }
 
-  const { retainedFunctions, retainedDecls, functions } = computeReachability({
-    modules,
-    entryModule,
-    manifest,
-    runtimeGlobal,
-  });
+  const { retainedFunctions, retainedDecls, methodFunctions } =
+    computeReachability({ modules, entryModule, manifest, runtimeGlobal });
 
   const methods = [];
+  const otherDecls = [];
   const emitted = new Set();
+  const emittedDecls = new Set();
 
-  for (const name of entryExportNames(entryModule)) {
-    if (
-      functions.has(name) &&
-      retainedFunctions.has(name) &&
-      !emitted.has(name)
-    ) {
-      const { node, mod } = functions.get(name);
-      methods.push(methodSource(node, mod.source));
-      emitted.add(name);
-    }
-  }
   for (const mod of modules) {
     for (const bodyNode of mod.ast.body) {
       const node = unwrapExport(bodyNode);
-      if (!node || node.type !== "FunctionDeclaration" || !node.id) continue;
-      if (
-        node.type === "FunctionDeclaration" &&
-        node.id &&
-        retainedFunctions.has(node.id.name) &&
-        !emitted.has(node.id.name)
-      ) {
+      if (!node) continue;
+      if (node.type !== "FunctionDeclaration" || !node.id) continue;
+      const name = node.id.name;
+      if (!retainedFunctions.has(name) || emitted.has(name)) continue;
+      if (methodFunctions.has(name)) {
         methods.push(methodSource(node, mod.source));
-        emitted.add(node.id.name);
+      } else {
+        otherDecls.push(stripsExport(mod.source.slice(node.start, node.end)));
       }
+      emitted.add(name);
     }
   }
 
-  const otherDecls = [];
-  const emittedDecls = new Set();
   for (const mod of modules) {
     for (const bodyNode of mod.ast.body) {
       const node = unwrapExport(bodyNode);
