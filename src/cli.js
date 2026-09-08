@@ -44,7 +44,10 @@ function printHelp(product) {
 async function main(argv) {
   const product = await loadProduct();
   const logger = createLogger({
-    color: process.stderr?.isTTY || process.stdout.isTTY,
+    color: {
+      out: !!process.stdout.isTTY,
+      err: !!process.stderr?.isTTY,
+    },
   });
 
   if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {

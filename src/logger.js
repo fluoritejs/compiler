@@ -3,28 +3,30 @@ export function createLogger({
   err = process.stderr,
   color = false,
 } = {}) {
-  const style = (open, close) => (string) =>
-    color ? `${open}${string}${close}` : string;
-  const dim = style("\u001b[2m", "\u001b[22m");
+  const outColor = typeof color === "object" && color !== null ? !!color.out : !!color;
+  const errColor = typeof color === "object" && color !== null ? !!color.err : !!color;
+  const outStyle = (open, close) => (string) =>
+    outColor ? `${open}${string}${close}` : string;
+  const outDim = outStyle("\u001b[2m", "\u001b[22m");
 
   return {
     error(message) {
       err.write(
-        `${color ? "\u001b[31m" : ""}✗${color ? "\u001b[39m" : ""} ${message}\n`,
+        `${errColor ? "\u001b[31m" : ""}✗${errColor ? "\u001b[39m" : ""} ${message}\n`,
       );
     },
     warn(message) {
       err.write(
-        `${color ? "\u001b[33m" : ""}!${color ? "\u001b[39m" : ""} ${message}\n`,
+        `${errColor ? "\u001b[33m" : ""}!${errColor ? "\u001b[39m" : ""} ${message}\n`,
       );
     },
     success(message) {
       out.write(
-        `${color ? "\u001b[32m" : ""}✓${color ? "\u001b[39m" : ""} ${message}\n`,
+        `${outColor ? "\u001b[32m" : ""}✓${outColor ? "\u001b[39m" : ""} ${message}\n`,
       );
     },
     skip(message) {
-      out.write(`${dim("-")} ${message}\n`);
+      out.write(`${outDim("-")} ${message}\n`);
     },
   };
 }
