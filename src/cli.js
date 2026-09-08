@@ -44,10 +44,7 @@ function printHelp(product) {
 async function main(argv) {
   const product = await loadProduct();
   const logger = createLogger({
-    color: {
-      out: !!process.stdout.isTTY,
-      err: !!process.stderr?.isTTY,
-    },
+    color: { out: !!process.stdout.isTTY, err: !!process.stderr?.isTTY },
   });
 
   if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
@@ -82,6 +79,20 @@ async function main(argv) {
 }
 
 main(process.argv.slice(2)).catch((error) => {
-  createLogger().error(error.message);
+  const logger = createLogger({
+    color: { out: false, err: !!process.stderr?.isTTY },
+  });
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : JSON.stringify(error);
+  logger.error(message);
+  if (error instanceof Error && error.cause) {
+    logger.error(
+      `Caused by: ${error.cause instanceof Error ? error.cause.message : String(error.cause)}`,
+    );
+  }
   process.exitCode = 1;
 });
