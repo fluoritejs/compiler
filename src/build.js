@@ -563,7 +563,7 @@ function scanAssets({ modules, runtimeGlobal }) {
   return { references: unique, dynamicKeys };
 }
 
-async function loadAssetCandidates(projectDir) {
+async function loadAssetCandidates(projectDir, references) {
   const assetsDir = join(projectDir, ASSETS_DIR);
   const candidates = new Map();
   let entries;
@@ -574,6 +574,7 @@ async function loadAssetCandidates(projectDir) {
   }
   for (const entry of entries) {
     if (!entry.isFile()) continue;
+    if (!references.includes(entry.name)) continue;
     const file = join(assetsDir, entry.name);
     const data = await readFile(file);
     const mime =
@@ -795,7 +796,7 @@ export async function build(projectDir = process.cwd(), options = {}) {
     }
   }
 
-  const candidates = await loadAssetCandidates(projectDir);
+  const candidates = await loadAssetCandidates(projectDir, references);
   const assets = buildAssetsObject(references, candidates, runtimeGlobal);
 
   for (const warning of warnings) {
