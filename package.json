@@ -1,5 +1,5 @@
 {
-  "name": "@fluoritejs/compiler",
+  "name": "fluorite-compiler",
   "version": "0.1.0",
   "description": "A Node CLI to compile multiple JavaScript files into a TurboWarp extension.",
   "homepage": "https://github.com/fluoritejs/compiler#readme",
