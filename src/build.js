@@ -42,12 +42,6 @@ const MIME_TYPES = new Map([
   [".wasm", "application/wasm"],
 ]);
 
-/**
- * Parse JavaScript source as an ECMAScript module.
- * @param {string} source - The JavaScript source to parse.
- * @param {string} file - The file path used in parse error messages.
- * @return {object} The parsed abstract syntax tree.
- */
 function parse(source, file) {
   try {
     return acorn.parse(source, {
@@ -62,11 +56,6 @@ function parse(source, file) {
   }
 }
 
-/**
- * Traverse an AST node and its child nodes.
- * @param {Object|Array} node - The AST node or collection of nodes to traverse.
- * @param {Function} visit - Callback invoked for each AST node.
- */
 function walk(node, visit) {
   if (!node || typeof node !== "object") return;
   if (Array.isArray(node)) {
@@ -88,11 +77,6 @@ function walk(node, visit) {
   }
 }
 
-/**
- * Collect referenced identifiers and extension block function names from an AST node.
- * @param {Object} rootNode - The AST node to analyze.
- * @returns {{uses: Set<string>, opcodes: Set<string>}} The referenced identifiers and discovered block function names.
- */
 function analyzeNode(rootNode, runtimeGlobal) {
   const uses = new Set();
   const opcodes = new Set();
@@ -205,12 +189,6 @@ function analyzeNode(rootNode, runtimeGlobal) {
   return { uses, opcodes };
 }
 
-/**
- * Bundles the entry module and its supported local JavaScript dependencies.
- * @param {string} projectDir - The project directory containing the source files.
- * @returns {Promise<Array<object>>} Modules in dependency order, including their paths, source text, and parsed ASTs.
- * @throws {Error} If the entry file is missing, a module cannot be read or parsed, imports are unsupported, or a circular dependency is detected.
- */
 async function bundleModules(projectDir) {
   const srcDir = join(projectDir, SRC_DIR);
   const entryPath = join(srcDir, ENTRY_FILE);
@@ -296,12 +274,6 @@ async function bundleModules(projectDir) {
   return modules;
 }
 
-/**
- * Loads and validates the project's extension manifest.
- * @param {string} projectDir - The project root directory containing the manifest.
- * @return {Promise<Object>} The parsed and validated manifest.
- * @throws {Error} If the manifest is missing, invalid JSON, or contains invalid required fields.
- */
 async function loadManifest(projectDir) {
   const manifestPath = join(projectDir, SRC_DIR, MANIFEST_FILE);
   let raw;
@@ -363,11 +335,6 @@ async function loadManifest(projectDir) {
   return manifest;
 }
 
-/**
- * Extract the names exported by an entry module.
- * @param {Object} entryModule - The parsed entry module.
- * @return {string[]} The exported names.
- */
 function entryExportNames(entryModule) {
   const names = [];
   for (const node of entryModule.ast.body) {
@@ -406,11 +373,6 @@ function entryExportNames(entryModule) {
   return names;
 }
 
-/**
- * Extract the declaration from an export statement.
- * @param {Object} node - The AST node to unwrap.
- * @return {Object|null} The exported declaration, the original node when it is not an export statement, or `null` when the export has no declaration.
- */
 function unwrapExport(node) {
   if (
     node.type === "ExportNamedDeclaration" ||
@@ -421,12 +383,6 @@ function unwrapExport(node) {
   return node;
 }
 
-/**
- * Collect top-level function, class, and simple variable bindings from bundled modules.
- * @param {Array} modules - Parsed modules whose top-level declarations are indexed.
- * @returns {{functions: Map, other: Map}} Maps of function bindings and other bindings.
- * @throws {Error} If multiple modules define the same binding name.
- */
 function collectTopLevelBindings(modules) {
   const functions = new Map();
   const other = new Map();
@@ -470,15 +426,6 @@ function collectTopLevelBindings(modules) {
   return { functions, other };
 }
 
-/**
- * Collects function names that serve as entry points for reachability analysis.
- * @param {Object} context - Root collection context.
- * @param {Object} context.entryModule - Entry module containing exported names.
- * @param {Object} context.manifest - Project manifest.
- * @param {Map<string, *>} context.functions - Available function bindings.
- * @param {Set<string>} context.opcodes - Manifest-associated opcode names.
- * @return {Set<string>} Function names selected as reachability roots.
- */
 function collectRoots({ entryModule, manifest, functions, opcodes }) {
   const roots = new Set();
   for (const name of entryExportNames(entryModule)) {
@@ -491,11 +438,6 @@ function collectRoots({ entryModule, manifest, functions, opcodes }) {
   return roots;
 }
 
-/**
- * Collects block opcodes defined in a manifest.
- * @param {Object} manifest - The extension manifest containing block definitions.
- * @return {Set<string>} The set of block opcode names.
- */
 function manifestOpcodes(manifest) {
   const opcodes = new Set();
   if (Array.isArray(manifest.blocks)) {
@@ -514,15 +456,6 @@ function manifestOpcodes(manifest) {
   return opcodes;
 }
 
-/**
- * Determines which functions and declarations are reachable from the extension entry points.
- * @param {Object} params - Reachability analysis inputs.
- * @param {Array} params.modules - Parsed project modules to analyze.
- * @param {Object} params.entryModule - Parsed entry module containing exported roots.
- * @param {Object} params.manifest - Extension manifest containing block metadata.
- * @param {string} params.runtimeGlobal - Runtime global identifier to exclude from local references.
- * @return {Object} Reachability results, including retained functions, retained declarations, extension method functions, and indexed bindings.
- */
 function computeReachability({
   modules,
   entryModule,
@@ -590,13 +523,6 @@ function computeReachability({
   };
 }
 
-/**
- * Finds runtime asset references in bundled modules.
- * @param {Object} input - Asset scan inputs.
- * @param {Array} input.modules - Parsed modules to inspect.
- * @param {string} input.runtimeGlobal - Runtime global identifier used for asset access.
- * @returns {{references: string[], dynamicKeys: string[]}} Static asset keys and dynamic asset access expressions.
- */
 function scanAssets({ modules, runtimeGlobal }) {
   const references = [];
   const dynamicKeys = [];
@@ -647,12 +573,6 @@ function scanAssets({ modules, runtimeGlobal }) {
   return { references: unique, dynamicKeys };
 }
 
-/**
- * Loads referenced assets and converts them to base64 data URLs.
- * @param {string} projectDir - The project directory containing the assets directory.
- * @param {string[]} references - Asset filenames to load.
- * @return {Promise<Map<string, string>>} A map of asset filenames to data URLs.
- */
 async function loadAssetCandidates(projectDir, references) {
   const assetsDir = join(projectDir, ASSETS_DIR);
   const candidates = new Map();
@@ -678,13 +598,6 @@ async function loadAssetCandidates(projectDir, references) {
   return candidates;
 }
 
-/**
- * Warn about hardcoded extension identifiers or names that differ from manifest metadata.
- * @param {Array} modules - Parsed project modules to inspect.
- * @param {Object} manifest - Extension manifest containing the expected `id` and `name`.
- * @param {string[]} warnings - Collection to which mismatch warnings are appended.
- * @param {string} runtimeGlobal - Runtime global name used in the recommended metadata access.
- */
 function checkHardcodedIdName({ modules, manifest, warnings, runtimeGlobal }) {
   for (const mod of modules) {
     walk(mod.ast, (node) => {
@@ -732,12 +645,6 @@ function checkHardcodedIdName({ modules, manifest, warnings, runtimeGlobal }) {
   }
 }
 
-/**
- * Adds warnings for differences between selected package metadata and manifest fields.
- * @param {string} projectDir - The project directory containing package.json.
- * @param {object} manifest - The extension manifest to compare against.
- * @param {string[]} warnings - The array to receive metadata difference warnings.
- */
 async function checkPackageJson(projectDir, manifest, warnings) {
   let packageJson;
   try {
@@ -762,13 +669,6 @@ async function checkPackageJson(projectDir, manifest, warnings) {
   }
 }
 
-/**
- * Builds the embedded asset map for statically referenced runtime assets.
- * @param {Iterable<string>} references - Asset keys referenced by the extension.
- * @param {Map<string, string>} candidates - Available asset keys and their data URLs.
- * @param {string} runtimeGlobal - Runtime global name used in missing-asset errors.
- * @returns {Object<string, string>} The asset keys mapped to their data URLs.
- */
 function buildAssetsObject(references, candidates, runtimeGlobal) {
   const assets = {};
   for (const key of references) {
@@ -782,12 +682,6 @@ function buildAssetsObject(references, candidates, runtimeGlobal) {
   return assets;
 }
 
-/**
- * Converts a function declaration into class-method source while preserving its name, parameters, body, and async or generator status.
- * @param {Object} fn - The function declaration to convert.
- * @param {string} source - The source text containing the function declaration.
- * @return {string} The equivalent class-method source.
- */
 function methodSource(fn, source) {
   const parts = [];
   if (fn.async) parts.push("async");
@@ -800,11 +694,6 @@ function methodSource(fn, source) {
   return `${parts.join(" ")}(${params}) ${body}`;
 }
 
-/**
- * Removes an export declaration prefix from source text.
- * @param {string} text - The source text to process.
- * @return {string} The source text without an `export` or `export default` prefix.
- */
 function stripsExport(text) {
   if (text.startsWith("export default "))
     return text.slice("export default ".length);
@@ -812,16 +701,6 @@ function stripsExport(text) {
   return text;
 }
 
-/**
- * Assembles the generated Scratch extension source.
- * @param {Object} options - Assembly inputs.
- * @param {Object} options.manifest - Extension metadata.
- * @param {Object} options.assets - Embedded asset data.
- * @param {string[]} options.methods - Class method source strings.
- * @param {string[]} options.otherDecls - Additional declaration source strings.
- * @param {string} options.runtimeGlobal - Name of the runtime data variable.
- * @return {string} The complete extension source.
- */
 function assemble({ manifest, assets, methods, otherDecls, runtimeGlobal }) {
   const head = [];
   head.push("(function (Scratch) {");
@@ -851,10 +730,7 @@ function assemble({ manifest, assets, methods, otherDecls, runtimeGlobal }) {
 }
 
 /**
- * Builds a Scratch extension bundle from a project directory.
- * @param {string} [projectDir=process.cwd()] - The project directory containing the source files and manifest.
- * @param {object} [options={}] - Build configuration and dependencies.
- * @returns {Promise<object>} The output file path, warnings, formatted bundle, and retained bindings.
+ * Builds the extension in `projectDir` and writes it to `dist/<id>@<version>.js`.
  */
 export async function build(projectDir = process.cwd(), options = {}) {
   const logger = options.logger ?? createLogger();

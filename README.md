@@ -63,4 +63,4 @@ npm run test     # run the node:test suite
 
 ## License
 
-Fluorite Compiler is proud to be Free Software. It is under the [Apache 2.0](LICENSE) license.
+Fluorite Compiler is Free Software under the [Apache 2.0](LICENSE) license.

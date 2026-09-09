@@ -7,10 +7,6 @@ import { init } from "./init.js";
 import { createLogger } from "./logger.js";
 import { loadProduct, productRootDir } from "./product.js";
 
-/**
- * Retrieves the product version from its package metadata.
- * @return {string} The product version, or `"0.0.0"` when the metadata cannot be read, parsed, or does not contain a string version.
- */
 async function productVersion() {
   try {
     const packageJson = JSON.parse(
@@ -24,10 +20,6 @@ async function productVersion() {
   }
 }
 
-/**
- * Prints the CLI usage, commands, and options for a product.
- * @param {object} product - Product metadata containing its name, description, and executable name.
- */
 function printHelp(product) {
   const usage = `${product.bin} <command> [project-dir]`;
   const lines = [
@@ -49,11 +41,6 @@ function printHelp(product) {
   process.stdout.write(lines.join("\n") + "\n");
 }
 
-/**
- * Executes the CLI command specified by the provided arguments.
- * @param {string[]} argv - Command-line arguments, including an optional command and project directory.
- * @throws {Error} If the command or project directory is invalid.
- */
 async function main(argv) {
   const product = await loadProduct();
   const logger = createLogger({

@@ -2,7 +2,6 @@ import js from "@eslint/js";
 import globals from "globals";
 
 export default [
-  // Base on eslint recommended
   js.configs.recommended,
 
   // Common for all files
