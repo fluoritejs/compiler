@@ -274,7 +274,7 @@ async function bundleModules(projectDir) {
   return modules;
 }
 
-async function loadManifest(projectDir) {
+export async function loadManifest(projectDir) {
   const manifestPath = join(projectDir, SRC_DIR, MANIFEST_FILE);
   let raw;
   try {
